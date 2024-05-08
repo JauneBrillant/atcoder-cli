@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
@@ -51,6 +51,8 @@ fn create_cargo_project(project_dir: &Path) -> std::io::Result<()> {
 
 fn create_src_files(project_dir: &Path) -> std::io::Result<()> {
     let src_dir = project_dir.join("src");
+
+    fs::remove_file(src_dir.join("main.rs"))?;
 
     for c in b'a'..b'h' {
         let filename = format!("{}.rs", c as char);
