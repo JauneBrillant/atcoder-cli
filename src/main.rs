@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
-
 mod commands;
+use commands::{login, new, submit, test};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -17,13 +17,16 @@ enum Commands {
     Submit { problem_alphabet: char },
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), anyhow::Error> {
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Login {} => commands::login::execute(),
-        Commands::New { contest_number } => commands::new::execute(contest_number),
-        Commands::Test { problem_alphabet } => commands::test::execute(problem_alphabet),
-        Commands::Submit { problem_alphabet } => commands::submit::execute(problem_alphabet),
+        Commands::Login {} => login::execute().await?,
+        Commands::New { contest_number } => new::execute(contest_number).await?,
+        Commands::Test { problem_alphabet } => test::execute(problem_alphabet).await?,
+        Commands::Submit { problem_alphabet } => submit::execute(problem_alphabet).await?,
     }
+
+    Ok(())
 }

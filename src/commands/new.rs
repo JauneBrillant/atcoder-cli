@@ -1,9 +1,10 @@
+use anyhow::Result;
 use std::fs::{self, File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use std::process::Command;
 
-pub fn execute(contest_number: &str) {
+pub async fn execute(contest_number: &str) -> Result<()> {
     let project_dir = Path::new(contest_number);
 
     if project_dir.exists() {
@@ -21,6 +22,8 @@ pub fn execute(contest_number: &str) {
             eprintln!("Failed to set dependency: {}", err);
         }
     }
+
+    Ok(())
 }
 
 fn create_cargo_project(project_dir: &Path) -> std::io::Result<()> {
