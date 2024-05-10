@@ -6,7 +6,7 @@ use promptuity::{
     themes::FancyTheme,
     Promptuity, Term,
 };
-use reqwest::{cookie::Jar, Client};
+use reqwest::{cookie::Jar, Client, Response};
 use scraper::{Html, Selector};
 
 pub async fn execute() -> Result<()> {
@@ -17,8 +17,19 @@ pub async fn execute() -> Result<()> {
         .build()?;
 
     let (username, password) = get_username_and_password_from_prompt()?;
-    let res = login(&client, &username, &password).await?;
-    println!("res = {}", res);
+    let response = login(&client, &username, &password).await?;
+
+    let html = response.text().await?;
+    let document = Html::parse_document(&html);
+
+    if let Some(_) = document
+        .select(&Selector::parse("div.alert-success").unwrap())
+        .next()
+    {
+        println!("Login Success!");
+    } else {
+        println!("Login Failed");
+    }
 
     Ok(())
 }
@@ -41,7 +52,7 @@ fn get_username_and_password_from_prompt() -> Result<(String, String)> {
     Ok((name, pass))
 }
 
-async fn login(client: &Client, username: &str, password: &str) -> Result<String> {
+async fn login(client: &Client, username: &str, password: &str) -> Result<Response> {
     let response = client.get("https://atcoder.jp/login").send().await?;
     let html = response.text().await?;
     let document = Html::parse_document(&html);
@@ -69,10 +80,5 @@ async fn login(client: &Client, username: &str, password: &str) -> Result<String
         .await
         .context("Failed to send POST request")?;
 
-    let text = response
-        .text()
-        .await
-        .context("Failed to get response text")?;
-
-    Ok(text)
+    Ok(response)
 }
